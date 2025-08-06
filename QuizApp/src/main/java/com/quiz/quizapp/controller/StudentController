@@ -1,0 +1,27 @@
+package com.quiz.quizapp.controller;
+
+import com.quiz.quizapp.model.Question;
+import com.quiz.quizapp.model.StudentRequest;
+import com.quiz.quizapp.service.QuizService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/quiz")
+public class StudentController {
+
+    @Autowired
+    private QuizService quizService;
+
+    @PostMapping("/start")
+    public List<Question> startQuiz(@RequestBody StudentRequest request) {
+        return quizService.startQuiz(request.getStudentId());
+    }
+
+    @PostMapping("/submit")
+    public String submitQuiz(@RequestBody StudentRequest request) {
+        return quizService.submitQuiz(request.getStudentId(), request.getAnswers());
+    }
+}

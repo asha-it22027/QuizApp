@@ -1,0 +1,53 @@
+package com.quiz.quizapp.service;
+
+import com.quiz.quizapp.model.Question;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+@Service
+public class QuizService {
+
+    @Autowired
+    private JdbcTemplate jdbc;
+
+    private List<Question> questions = Arrays.asList(
+        new Question(1, "বাংলাদেশের রাজধানী কোনটি?", "চট্টগ্রাম", "রাজশাহী", "ঢাকা", "খুলনা"),
+        new Question(2, "সুন্দরবন কোথায় অবস্থিত?", "সিলেট", "চট্টগ্রাম", "বাগেরহাট", "কক্সবাজার")
+    );
+
+    private Map<Integer, String> correctAnswers = Map.of(
+        1, "ঢাকা",
+        2, "বাগেরহাট"
+    );
+
+    public List<Question> startQuiz(String studentId) {
+        String sql = "SELECT COUNT(*) FROM student WHERE student_id = ?";
+        Integer count = jdbc.queryForObject(sql, Integer.class, studentId);
+
+        if (count != null && count > 0) {
+            return questions;
+        } else {
+            throw new RuntimeException("Invalid Student ID");
+        }
+    }
+
+    public String submitQuiz(String studentId, Map<Integer, String> answers) {
+        int score = 0;
+
+        for (Map.Entry<Integer, String> entry : answers.entrySet()) {
+            int qid = entry.getKey();
+            String ans = entry.getValue();
+            if (correctAnswers.get(qid).equals(ans)) {
+                score++;
+            }
+        }
+
+        String sql = "INSERT INTO score (student_id, score) VALUES (?, ?)";
+        jdbc.update(sql, studentId, score);
+
+        return "আপনার স্কোর: " + score + " / " + questions.size();
+    }
+}
